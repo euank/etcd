@@ -305,6 +305,9 @@ type Config struct {
 	// ZapLoggerBuilder is used to build the zap logger.
 	ZapLoggerBuilder func(*Config) error
 
+	// DisableGRPCLogger controls whether grpclog is configured to also log.
+	DisableGRPCLogger bool `json:"configure-grpc-logger"`
+
 	// logger logs server-side operations. The default is nil,
 	// and "setupLogging" must be called before starting server.
 	// Do not set logger directly.

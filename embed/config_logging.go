@@ -103,15 +103,17 @@ func (cfg *Config) setupLogging() error {
 					c.loggerConfig = &copied
 					c.loggerCore = nil
 					c.loggerWriteSyncer = nil
-					grpcLogOnce.Do(func() {
-						// debug true, enable info, warning, error
-						// debug false, only discard info
-						var gl grpclog.LoggerV2
-						gl, err = logutil.NewGRPCLoggerV2(copied)
-						if err == nil {
-							grpclog.SetLoggerV2(gl)
-						}
-					})
+					if !c.DisableGRPCLogger {
+						grpcLogOnce.Do(func() {
+							// debug true, enable info, warning, error
+							// debug false, only discard info
+							var gl grpclog.LoggerV2
+							gl, err = logutil.NewGRPCLoggerV2(copied)
+							if err == nil {
+								grpclog.SetLoggerV2(gl)
+							}
+						})
+					}
 					return nil
 				}
 			}
@@ -151,9 +153,11 @@ func (cfg *Config) setupLogging() error {
 					c.loggerCore = cr
 					c.loggerWriteSyncer = syncer
 
-					grpcLogOnce.Do(func() {
-						grpclog.SetLoggerV2(logutil.NewGRPCLoggerV2FromZapCore(cr, syncer))
-					})
+					if !c.DisableGRPCLogger {
+						grpcLogOnce.Do(func() {
+							grpclog.SetLoggerV2(logutil.NewGRPCLoggerV2FromZapCore(cr, syncer))
+						})
+					}
 					return nil
 				}
 			}
@@ -211,9 +215,11 @@ func NewZapCoreLoggerBuilder(lg *zap.Logger, cr zapcore.Core, syncer zapcore.Wri
 		cfg.loggerCore = cr
 		cfg.loggerWriteSyncer = syncer
 
-		grpcLogOnce.Do(func() {
-			grpclog.SetLoggerV2(logutil.NewGRPCLoggerV2FromZapCore(cr, syncer))
-		})
+		if !cfg.DisableGRPCLogger {
+			grpcLogOnce.Do(func() {
+				grpclog.SetLoggerV2(logutil.NewGRPCLoggerV2FromZapCore(cr, syncer))
+			})
+		}
 		return nil
 	}
 }
